@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Image Encryptor</title>
+
+	<meta property="og:title" content="Image Encryptor by FoumartGames" />
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content="https://www.foumartgames.com/extensions/ImageEncryptor/" />
+	<meta property="og:description" content="Image Encryptor lets you encrypt 8-colored images as plain text. A tool designed for #js13kgames." />
+	
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="Image Encryptor by FoumartGames" />
+	<meta name="twitter:description" content="Image Encryptor lets you encrypt 8-colored images as plain text. A tool designed for #js13kgames." />
+
+<script type="text/javascript" src="app.js"></script>
+
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
+	<body style="background-color:#555">
+		<div id="imageEncryptor" style="position:absolute;width:100%;height:100%">
+			<div id="imageEncryptorContent" style="position:absolute;width:100%;height:auto">
+				<div id="topper">
+					<b>Image Encryptor 2.0</b> by FoumartGames, Aug 15th, 2022.<span id="closeFooter" onclick="closeFooterClick()">&#10006;&nbsp;</span>
+					<hr>
+					<div style="margin-top:18px">Encrypt 8-colored images as plain text (ANSI encoding - Western ISO 8859-1)</div>
+					<div style="margin-top:6px">Useful for JS13K Games Competition. Adaptation over <a href="https://xem.github.io/miniPixelArt/" target="_blank">miniPixelArt</a> by XEM.</div>
+				</div>
+
+				<div id="app">
+					Open an image for encryption:<span id="closeFooter" onclick="resetClick()"><b>↺</b>&nbsp;</span>
+					<hr>
+					<input type="file" onchange="onOpen(event)" /><br />
+					<div id="size" style="border:5px solid #ccc;background-color:#ccc;color:#555;padding-bottom:1px;margin-top:10px">Image limitations: 8 colors + tranparency, 4096 total pixels max (64x64).</div>
+				</div>
+
+				<div id="output" style="display:none">
+					<div id="loadedImageContainer" style="display:none">
+						<span style="vertical-align:top;">Image:</span>
+						<canvas id="canvas" style="display:inline-block;"></canvas>&nbsp;
+						<div id="loadedImageFrame" style="display:inline-block;border: 1px solid black">
+							<img id="loadedImage"/>
+						</div>&nbsp;
+						<div id="loadedImageData" style="display:inline-table;vertical-align:top">
+							Dimensions: <span id="imageWidth"></span> x <span id="imageHeight"></span> px<span id="imageColors"></span><br/>
+							<div id="colorsData" style="display:flex"></div>
+							<div id="colorsText"></div>
+						</div>
+						<hr>
+					</div>
+
+					<div id="colorPalette">
+						<span>Color Palette:</span>
+						<div style="display:flex">
+							<input type="color" id="c1" class="color" value="#ffffff" onchange="pickerChange(0)">
+							<input type="color" id="c2" class="color" value="#ffffff" onchange="pickerChange(1)">
+							<input type="color" id="c3" class="color" value="#ffffff" onchange="pickerChange(2)">
+							<input type="color" id="c4" class="color" value="#ffffff" onchange="pickerChange(3)">
+							<input type="color" id="c5" class="color" value="#ffffff" onchange="pickerChange(4)">
+							<input type="color" id="c6" class="color" value="#ffffff" onchange="pickerChange(5)">
+							<input type="color" id="c7" class="color" value="#ffffff" onchange="pickerChange(6)">
+							<input type="color" id="c8" class="color" value="#ffffff" onchange="pickerChange(7)">
+						</div>
+						<div style="display:flex">
+							<div id="ct1" class="colorText"></div>
+							<div id="ct2" class="colorText"></div>
+							<div id="ct3" class="colorText"></div>
+							<div id="ct4" class="colorText"></div>
+							<div id="ct5" class="colorText"></div>
+							<div id="ct6" class="colorText"></div>
+							<div id="ct7" class="colorText"></div>
+							<div id="ct8" class="colorText"></div>
+						</div>
+					</div>
+
+					<div id="tileContainer" style="margin-top:12px">
+						<hr>
+						Encrypted result:
+						<br/>
+						<canvas id="tile" width="32" height="32" style="border:1px solid;margin-top:4px"></canvas>
+					</div>
+				</div>
+				<div id="result" style="display:none">
+					<div style="padding:4px;">Complete Snippet:<div id="jsfiddle" style="float:right"><a onclick="fiddleClick()" href="javascript:;">Preview in JS Fiddle</a></div></div>
+					<textarea rows="1" id="exp"></textarea>
+				</div>
+				<div id="rescol" style="display:none">
+					<div style="padding:4px;">Colors Data:<div style="float:right"><span id="paletteBytes"></span> bytes</div></div>
+					<textarea rows="1" id="col"></textarea>
+				</div>
+				<div id="resenc" style="display:none">
+					<div style="padding:4px;">Encryption Data:<div style="float:right"><span id="imageBytes"></span> bytes</div></div>
+					<textarea rows="1" id="enc"></textarea>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		window.addEventListener("load", load);
+	</script>
+</html>
