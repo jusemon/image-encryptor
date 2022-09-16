@@ -9,6 +9,8 @@ let pixels;
 let px;
 let slf = this;
 var external = null;
+let filePicked;
+let historyIndex;
 
 window.onpopstate = (event) => {
 	colors = null;
@@ -20,12 +22,33 @@ window.onpopstate = (event) => {
 	//document.getElementById("size").style.display = "none";
 	defaultWarning();
 
-	const lastState = event.state && colorsText.innerHTML == event.state.split("colors=")[1];
-	init(lastState ? false : {});
+	const lastState = event.state.href && colorsText.innerHTML == event.state.href.split("colors=")[1];
+	historyIndex = event.state.index;
+
+	if (lastState || !event.state.file) {
+		filePicker.style = '';
+		fileName.innerHTML = '';
+	} else {
+		filePicker.style = 'width:90px';
+		fileName.innerHTML = event.state.file;
+	}
+	init(lastState && event.state.index == history.length - 1 ? false : {});
 	loadedImageContainer.style.display = lastState ? "block" : "none";
 }
 
 function load(event) {
+	// initialize history state with additional data: file and index
+	if (!history.state) {
+		historyIndex = history.length - 1;
+		history.replaceState({ index: historyIndex, file: '', href: location.href }, '');
+	} else {
+		historyIndex = history.state.index;
+		if (history.state.file) {
+			filePicker.style = 'width:90px';
+			fileName.innerHTML = history.state.file;
+		}
+	}
+
 	imageEncryptor.addEventListener("dragover", handleDragOver, false);
 	imageEncryptor.addEventListener("drop", handleFileSelect, false);
 	init(event);
@@ -44,7 +67,8 @@ function init(postLoad) {
 		rescol.style.display = "inline-table";
 		resenc.style.display = "inline-table";
 
-		if (colors.length > 48) {
+		const hasTransparency = pxls.indexOf('0') > -1;
+		if (colors.length > 48 || colors.length > 42 && hasTransparency) {
 			colors = colors.substr(0, 48);
 			encryptImage("⛔️ There are more than 8 colors in this image!");
 			document.getElementById("size").style.backgroundColor = "#daa";
@@ -79,7 +103,8 @@ function closeFooterClick(event) {
 }
 
 function resetClick(event) {
-	window.history.pushState('', '',  url.origin + url.pathname);
+	historyIndex = history.length;
+	window.history.pushState({ index: historyIndex, file: '', href: '' }, '',  url.origin + url.pathname);
 	defaultWarning();
 	init();
 }
@@ -88,7 +113,7 @@ function defaultWarning() {
 	document.getElementById("size").style.backgroundColor = "#ccc";
 	document.getElementById("size").style.borderColor = "#ccc";
 	document.getElementById("size").style.color = "#555";
-	document.getElementById("size").innerHTML = "Image limitations: 8 colors + tranparency, 4096 total pixels max (64x64).";
+	document.getElementById("size").innerHTML = "⚠ Image limitations: 8 colors (7 + tranparency), 4096 total pixels maximum.";
 }
 
 function buildRgb(imageData) {
@@ -139,6 +164,9 @@ function createFileReader() {
 			let pixelsData = [];
 			let colorsTxt = '';
 			const imgColors = document.getElementById('imageColors');
+			excessText.innerHTML = '';
+			excessColors.innerHTML = '';
+
 			if (canvas.width * canvas.height < 4096) {
 				loadedImageFrame.style.display = "inline-block";
 				img.style.display = "inline-block";
@@ -156,11 +184,21 @@ function createFileReader() {
 					colorsData.removeChild(colorsData.lastElementChild);
 				}
 
+				const excessData = document.getElementById('excessData');
+				while (excessData.lastElementChild) {
+					excessData.removeChild(excessData.lastElementChild);
+				}
+
 				let dummyColor = -1;
 				differentColors.forEach((colorObject, index) => {
 					if (colorObject.alpha) {
-						if (index < 9) {
+						if (index < 8) {
 							addColorBox(colorsData, colorObject);
+						} else {
+							if (excessText.innerHTML == '') {
+								excessText.innerHTML = `<hr>Excess color${differentColors.length > 9 ? 's' : ''}: `;
+							}
+							addColorBox(excessData, colorObject);
 						}
 					} else {
 						dummyColor = index;
@@ -169,13 +207,18 @@ function createFileReader() {
 					colorsTxt += colorObject.color.substr(0,6) + (colorObject.color.substr(6,2) == "ff" ? "XX" : "__");
 				});
 
-				imgColors.innerHTML = ", Colors: ";
-				imgColors.innerHTML += dummyColor > -1 && differentColors.length < 10 ? (differentColors.length - 1) + ` (+1 transparent${differentColors.length<9?'':', optimal'})` :
-					(differentColors.length > 8) ? `${differentColors.length} ⚠ ${differentColors.length-8} color${differentColors.length-8>1?'s':''} overhead!` : differentColors.length;
+				const hasTransparency = dummyColor > -1;
 
-				if (dummyColor > -1) {
+				imgColors.innerHTML = ", Pixels: " + (canvas.width * canvas.height) + ", Colors: ";
+				imgColors.innerHTML += hasTransparency && differentColors.length < 9
+					? (differentColors.length - 1) + ` +1 transparent${differentColors.length < 8 ? '' : ', optimal ✔'}`
+					: (differentColors.length > 8)
+						? `${differentColors.length} ⚠ ${differentColors.length - 8} color${differentColors.length - 8 > 1 ? 's' : ''} overhead!`
+						: differentColors.length + (differentColors.length == 8 ? ', optimal ✔' : '');
+
+				if (hasTransparency) {
 					colorsData.innerHTML += "<span style='line-height:44px'> + </span>";
-					addColorBox(colorsData, {red: 0, green: 0, blue: 0, alpha: 0});
+					addColorBox(colorsData, {red: 0, green: 0, blue: 0, alpha: 0});// transparent box
 				}
 
 				for (let i = 0; i < imageData.data.length; i += 4) {
@@ -192,7 +235,7 @@ function createFileReader() {
 					colorsTxt += colorObject.color.substr(0, 6);
 				});
 
-				if (dummyColor > -1) {
+				if (hasTransparency) {
 					colorsTxt = colorsTxt.substr(0, dummyColor * 6) + colorsTxt.substr(dummyColor * 6 + 6);
 					pixelsData.forEach((color, index) => {
 						if (color < dummyColor) pixelsData[index] = color + 1;
@@ -202,7 +245,12 @@ function createFileReader() {
 				}
 				else pixelsData.forEach((color, index) => pixelsData[index] = color + 1);
 
-				colorsText.innerHTML = colorsTxt.length > 48 ? colorsTxt.substr(0,48) + "…" + colorsTxt.substr(48) : colorsTxt;
+				const allowed = hasTransparency ? 42 : 48;
+				colorsText.innerHTML = colorsTxt.substr(0, allowed);
+				if (colorsTxt.length > allowed) {
+					colorsText.innerHTML += "…"
+					excessColors.innerHTML = colorsTxt.substr(allowed);
+				}
 			} else {
 				loadedImageFrame.style.display = "none";
 				img.style.display = "none";
@@ -217,7 +265,8 @@ function createFileReader() {
 			PARAMS += "&width=" + img.width;
 			PARAMS += "&height=" + img.height;
 			PARAMS += "&colors=" + colorsTxt;
-			window.history.pushState(PARAMS, '', URL + PARAMS);
+			historyIndex += 1;
+			window.history.pushState({ index: historyIndex, file: filePicked.name, href: PARAMS }, '', URL + PARAMS);
 
 			init(colorsTxt != "");
 		};
@@ -227,7 +276,14 @@ function createFileReader() {
 
 function onOpen(event) {
 	const fileReader = createFileReader();
-	fileReader.readAsDataURL(event.target.files[0]);
+	if (event.target.files.length) {
+		filePicker.style = '';
+		fileName.innerHTML = '';
+		filePicked = event.target.files[0];
+		fileReader.readAsDataURL(filePicked);
+	} else {
+		filePicked = null;
+	}
 }
 
 function handleDragOver(event) {
@@ -281,7 +337,7 @@ function addTransparentBox(colorFrame, offsetX = 0, offsetY = 0) {
 function pickerChange(id) {
 	const color = document.getElementById("c" + (id + 1)).value.substr(1);
 	colors = colors.substr(0, id*6) + color + colors.substr(id*6 + 6);
-	encryptImage(true);
+	encryptImage(2);
 }
 
 // Image to string encryption
@@ -290,13 +346,19 @@ function encryptImage(warning) {
 	tileCtx = tile.getContext("2d");
 	pixels = [];
 	px = [];
-	const loadedFromMemory = "<div>⚠️ The below encrypted image was loaded from history.</div>";
+	const fileIndex = `<div style="float:right;margin:3px">(file: ${historyIndex} / ${history.length-1})</div>`;
+	const loadedFromMemory = '⚠ The below encrypted image was loaded from session history.';
+	const colorsChanged = '&#127752; Colors updated. Manipulation not saved in session history.';
 	if (typeof warning == "object") {
 		warning = loadedFromMemory;
 		document.getElementById("size").style.backgroundColor = "#ec8";
 		document.getElementById("size").style.borderColor = "#eb6";
+	} else if (warning == 2) {
+		warning = colorsChanged;
+		document.getElementById("size").style.backgroundColor = "#ccc";
+		document.getElementById("size").style.borderColor = "#bbb";
 	}
-	document.getElementById("size").innerHTML = warning && warning != true ? warning : "<div>✅	Image encryption successful!</div>";
+	document.getElementById("size").innerHTML = warning && warning != true ? warning + " " + fileIndex : `✅ Image encryption successful! ${fileIndex}`;
 	document.getElementById("size").style.display = "block";
 	document.getElementById("size").style.color = "#000";
 
@@ -317,7 +379,7 @@ function encryptImage(warning) {
 			document.getElementById("c"+i).style.display = "none";
 		}
 	}
-	encrypt(warning === true || warning == loadedFromMemory);
+	encrypt(warning === false || warning === true || warning == loadedFromMemory || warning == colorsChanged);
 }
 
 function encrypt(_successful) {
@@ -334,10 +396,12 @@ function encrypt(_successful) {
 	draw();
 	if (_successful) exportData();
 	else {
-		exp.value = "Image encryption unsuccessful! Please pick a suitable image.";
+		exp.value = "Image encryption failed! Please pick a suitable image. The image should not contain more tham 8 solid colors (or 7 solid colors + transparency).";
 		col.value = "";
 		enc.value = "";
 		jsfiddle.style.display = "none";
+		imageBytes.innerHTML = '';
+		paletteBytes.innerHTML = '';
 	}
 }
 
@@ -433,9 +497,21 @@ for(j=0;j<H;j++){
 	enc.focus();
 	enc.select();
 	jsfiddle.style.display = "block";
+	imageBytes.innerHTML = "~ " + ((new TextEncoder().encode(enc.value)).length - checkReducedBytes(enc.value));
+	paletteBytes.innerHTML = "~ " + ((new TextEncoder().encode(col.value)).length - checkReducedBytes(col.value));
+}
 
-	imageBytes.innerHTML = (new TextEncoder().encode(enc.value)).length;
-	paletteBytes.innerHTML = (new TextEncoder().encode(col.value)).length;
+function checkReducedBytes(str) {
+	let reducedBytes = 0;
+	let previousChar;
+	str.split('').forEach(char => {
+		if (previousChar != char) {
+			previousChar = char;
+		} else {
+			reducedBytes ++;
+		}
+	});
+	return reducedBytes;
 }
 
 // JS Fiddle integration
