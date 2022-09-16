@@ -1,8 +1,9 @@
-# ImageEncryptor
-Encrypt 8-colored images as plain text. A tool designed for https://js13kgames.com/.
+# [ImageEncryptor](https://www.foumartgames.com/extensions/ImageEncryptor/)
 
-Image limitations: 8 colors + tranparency, 4096 total pixels max (64x64).
+Encrypt 8-colored images as plain text. A tool designed for [JS13K Games](https://js13kgames.com/) competition.
+
+Image limitations: 8 colors (7 + tranparency), 4096 total pixels max (for example: 64x64px).
 
 The strings produced are with ANSI encoding (Western ISO 8859-1) suitable for ZIP archiving.
 
-Adaptation over Mini Pixel Art by XEM (https://xem.github.io/miniPixelArt/)
+Adaptation over [Mini Pixel Art](https://xem.github.io/miniPixelArt/) by XEM
