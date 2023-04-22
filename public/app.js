@@ -75,9 +75,9 @@ function init(postLoad) {
 			encryptImage("⛔️ There are more than 8 colors in this image!");
 			document.getElementById("size").style.backgroundColor = "#daa";
 			document.getElementById("size").style.borderColor = "#e88";
-		} else if (pxls.length > 4096 || !pxls.length) {
-			pxls = pxls.substr(0, 4096);
-			encryptImage("⛔️ The image is too large! Total pixels limit is 4096 (64x64 image)");
+		} else if (pxls.length > 16384 || !pxls.length) {
+			pxls = pxls.substr(0, 16384);
+			encryptImage("⛔️ The image is too large! Total pixels limit is 16384 (128x128 image)");
 			document.getElementById("size").style.backgroundColor = "#daa";
 			document.getElementById("size").style.borderColor = "#e88";
 		} else {
@@ -170,7 +170,7 @@ function createFileReader() {
 			excessText.innerHTML = '';
 			excessColors.innerHTML = '';
 
-			if (canvas.width * canvas.height < 4096) {
+			if (canvas.width * canvas.height < 16384) {
 				loadedImageFrame.style.display = "inline-block";
 				img.style.display = "inline-block";
 				img.style.transform = `scale(${scale})`;
@@ -178,6 +178,7 @@ function createFileReader() {
 				tileContainer.style.display = "block";
 				colorPalette.style.display = "block";
 
+				console.log(canvas.width, canvas.height);
 				const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 				const colorsArray = buildRgb(imageData.data);
 				differentColors = [...new Map(colorsArray.map(item => [item["color"], item])).values()];
@@ -259,10 +260,11 @@ function createFileReader() {
 				img.style.display = "none";
 				tileContainer.style.display = "none";
 				colorPalette.style.display = "none";
-				imgColors.innerHTML = ` ⚠ ${canvas.width * canvas.height - 4096} pixels overhead!`;
+				imgColors.innerHTML = ` ⚠ ${canvas.width * canvas.height - 16384} pixels overhead!`;
 			}
 
 			let URL = url.origin + url.pathname;
+			console.log('Number of pixels', pixelsData.length);
 			let PARAMS = "?pixels=";
 			PARAMS += pixelsData.join('');
 			PARAMS += "&width=" + img.width;
@@ -365,6 +367,7 @@ function encryptImage(warning) {
 	document.getElementById("size").style.display = "block";
 	document.getElementById("size").style.color = "#000";
 
+	console.log('Processing pixels', pxls.length);
 	for(let j = 0; j < pxls.length; j++){
 		px.push(pxls.substr(j,1));
 	}
@@ -506,8 +509,11 @@ for(j=0;j<H;j++){
 c=a.getContext\`2d\`
 C="${colors}"
 P=${arrValue}
+W=P.reduce((w,r)=>r.length>w?r.length:w, 0)
+a.width=W
+a.height=P.length
 for(j=0;j<P.length;j++){
-	for(i=0;i<P[j].length;i++){
+	for(i=0;i<W;i++){
 		if(P[j][i]){
 			c.fillStyle="#"+C.substr(6*(P[j][i]-1),6)
 			c.fillRect(i,j,1,1)
