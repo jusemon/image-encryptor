@@ -19,6 +19,7 @@ window.onpopstate = (event) => {
 	result.style.display = "none";
 	rescol.style.display = "none";
 	resenc.style.display = "none";
+	resarr.style.display = "none";
 	//document.getElementById("size").style.display = "none";
 	defaultWarning();
 
@@ -66,6 +67,7 @@ function init(postLoad) {
 		result.style.display = "inline-table";
 		rescol.style.display = "inline-table";
 		resenc.style.display = "inline-table";
+		resarr.style.display = "inline-table";
 
 		const hasTransparency = pxls.indexOf('0') > -1;
 		if (colors.length > 48 || colors.length > 42 && hasTransparency) {
@@ -89,6 +91,7 @@ function init(postLoad) {
 		result.style.display = "none";
 		rescol.style.display = "none";
 		resenc.style.display = "none";
+		resarr.style.display = "none";
 	}
 
 	if (external) external();
@@ -399,7 +402,9 @@ function encrypt(_successful) {
 		exp.value = "Image encryption failed! Please pick a suitable image. The image should not contain more tham 8 solid colors (or 7 solid colors + transparency).";
 		col.value = "";
 		enc.value = "";
+		arr.value = "";
 		jsfiddle.style.display = "none";
+		arrJsfiddle.style.display = "none";
 		imageBytes.innerHTML = '';
 		paletteBytes.innerHTML = '';
 	}
@@ -472,7 +477,7 @@ function exportData() {
 	}
 	col.value = `${colors}`
 	enc.value = `${pxascii}`
-exp.value =
+	exp.value =
 `<canvas id=a>
 <script>
 c=a.getContext\`2d\`
@@ -494,9 +499,28 @@ for(j=0;j<H;j++){
 	}
 }
 <\/script>`
+	const arrValue = `[\n\t[${pixels.map(row=>row.map(col => col>0 ? col : ' ')).join('],\n\t[')}]\n];`;
+	arr.value = `
+<canvas id=a>
+<script>
+c=a.getContext\`2d\`
+C="${colors}"
+P=${arrValue}
+for(j=0;j<P.length;j++){
+	for(i=0;i<P[j].length;i++){
+		if(P[j][i]){
+			c.fillStyle="#"+C.substr(6*(P[j][i]-1),6)
+			c.fillRect(i,j,1,1)
+		}
+	}
+}
+<\/script>
+	`
+
 	enc.focus();
 	enc.select();
 	jsfiddle.style.display = "block";
+	arrJsfiddle.style.display = "block";
 	imageBytes.innerHTML = "~ " + ((new TextEncoder().encode(enc.value)).length - checkReducedBytes(enc.value));
 	paletteBytes.innerHTML = "~ " + ((new TextEncoder().encode(col.value)).length - checkReducedBytes(col.value));
 }
@@ -518,6 +542,20 @@ function checkReducedBytes(str) {
 function fiddleClick(event) {
 	//event.preventDefault();
 	const l = exp.value.split("<script>")[1].split("</script>")[0];
+	const n = "<canvas id=a>";
+	const k = "/*\r  Start of generated encrypted image snippet\r*/\r\r" + l + "\r/*\r  End of generated encrypted image snippet\r*/";
+	const o = "/*\r  Image Encryptor 2.0 - by Noncho Savov (www.FoumartGames.com)\r*/\r\r/* Note: the following CSS is only for the preview purposes */\r#a {\r  transform: scale(5);\r  transform-origin: 0% 0%;\r  image-rendering: pixelated;\r  image-rendering: -moz-crisp-edges;\r  image-rendering: crisp-edges;\r}";
+	post("https://jsfiddle.net/api/post/library/pure/", {
+		html: n,
+		css: o,
+		js: k
+	})
+}
+
+// JS Fiddle integration
+function arrFiddleClick(event) {
+	//event.preventDefault();
+	const l = arr.value.split("<script>")[1].split("</script>")[0];
 	const n = "<canvas id=a>";
 	const k = "/*\r  Start of generated encrypted image snippet\r*/\r\r" + l + "\r/*\r  End of generated encrypted image snippet\r*/";
 	const o = "/*\r  Image Encryptor 2.0 - by Noncho Savov (www.FoumartGames.com)\r*/\r\r/* Note: the following CSS is only for the preview purposes */\r#a {\r  transform: scale(5);\r  transform-origin: 0% 0%;\r  image-rendering: pixelated;\r  image-rendering: -moz-crisp-edges;\r  image-rendering: crisp-edges;\r}";

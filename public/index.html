@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Image Encryptor</title>
 
-	<meta property="og:title" content="Image Encryptor by FoumartGames" />
+	<meta property="og:title" content="Image Encryptor by FoumartGames (and jusemon)" />
 	<meta property="og:type" content="article" />
 	<meta property="og:url" content="https://www.foumartgames.com/extensions/ImageEncryptor/" />
 	<meta property="og:description" content="Image Encryptor lets you encrypt 8-colored images as plain text. A tool designed for #js13kgames." />
@@ -22,7 +22,7 @@
 		<div id="imageEncryptor" style="position:absolute;width:100%;height:100%">
 			<div id="imageEncryptorContent" style="position:absolute;width:100%;height:auto">
 				<div id="topper">
-					<b>Image Encryptor 2.0</b> by FoumartGames, Aug 15th, 2022.<span id="closeFooter" onclick="closeFooterClick()">&#10006;&nbsp;</span>
+					<b>Image Encryptor 2.1</b> by FoumartGames (And jusemon), April 21th, 2023.<span id="closeFooter" onclick="closeFooterClick()">&#10006;&nbsp;</span>
 					<hr>
 					<div style="margin-top:18px">Encrypt 8-colored images as plain text (ANSI encoding - Western ISO 8859-1)</div>
 					<div style="margin-top:6px">Useful for JS13K Games Competition. Adaptation over <a href="https://xem.github.io/miniPixelArt/" target="_blank">miniPixelArt</a> by XEM.</div>
@@ -95,6 +95,10 @@
 				<div id="resenc" style="display:none">
 					<div style="padding:4px;">Encryption Data:<div style="float:right"><span id="imageBytes"></span> bytes</div></div>
 					<textarea rows="1" id="enc"></textarea>
+				</div>
+				<div id="resarr" style="display:none">
+					<div style="padding:4px;">Array Snippet:<div id="arrJsfiddle" style="float:right"><a onclick="arrFiddleClick()" href="javascript:;">Preview in JS Fiddle</a></div></div>
+					<textarea rows="1" id="arr"></textarea>
 				</div>
 			</div>
 		</div>

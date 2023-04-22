@@ -42,7 +42,7 @@ link:hover {
 	background-color: #ddd;
 	border: 1px solid #aaa;
 }
-#exp, #col, #enc {
+#exp, #col, #enc, #arr {
 	border: 0;
 	margin: 0;
 	padding: 0;
@@ -50,14 +50,14 @@ link:hover {
 	width: auto;
 	height: auto;
 }
-#col, #enc, #exp {
+#col, #enc, #exp, #arr {
 	min-width: 530px;
 	max-width: 1200px;
 	min-height: 60px;
 	width: 100%;
 	resize: vertical;
 }
-#rescol, #resenc, #result {
+#rescol, #resenc, #result, #resarr {
 	float: left;
 	margin: 5px 0 0 5px;
 	max-width: calc(50% - 10px);
@@ -95,7 +95,7 @@ link:hover {
 		max-width: calc(100% - 32px);
 		width: 100%;
 	}
-	#rescol, #resenc, #result {
+	#rescol, #resenc, #result, #resarr {
 		max-width: calc(100% - 12px);
 		width: 100%;
 	}
