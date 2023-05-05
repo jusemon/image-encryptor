@@ -11,6 +11,7 @@ let slf = this;
 var external = null;
 let filePicked;
 let historyIndex;
+const limit = 262144;
 
 window.onpopstate = (event) => {
 	colors = null;
@@ -75,9 +76,10 @@ function init(postLoad) {
 			encryptImage("⛔️ There are more than 8 colors in this image!");
 			document.getElementById("size").style.backgroundColor = "#daa";
 			document.getElementById("size").style.borderColor = "#e88";
-		} else if (pxls.length > 16384 || !pxls.length) {
-			pxls = pxls.substr(0, 16384);
-			encryptImage("⛔️ The image is too large! Total pixels limit is 16384 (128x128 image)");
+		} else if (pxls.length > limit || !pxls.length) {
+			pxls = pxls.substr(0, limit);
+			const size = Math.sqrt(limit);
+			encryptImage(`⛔️ The image is too large! Total pixels limit is size (${size}x${size} image)`);
 			document.getElementById("size").style.backgroundColor = "#daa";
 			document.getElementById("size").style.borderColor = "#e88";
 		} else {
@@ -116,7 +118,7 @@ function defaultWarning() {
 	document.getElementById("size").style.backgroundColor = "#ccc";
 	document.getElementById("size").style.borderColor = "#ccc";
 	document.getElementById("size").style.color = "#555";
-	document.getElementById("size").innerHTML = "⚠ Image limitations: 8 colors (7 + tranparency), 4096 total pixels maximum.";
+	document.getElementById("size").innerHTML = `⚠ Image limitations: 8 colors (7 + tranparency), ${limit} total pixels maximum.`;
 }
 
 function buildRgb(imageData) {
@@ -170,7 +172,7 @@ function createFileReader() {
 			excessText.innerHTML = '';
 			excessColors.innerHTML = '';
 
-			if (canvas.width * canvas.height < 16384) {
+			if (canvas.width * canvas.height < limit) {
 				loadedImageFrame.style.display = "inline-block";
 				img.style.display = "inline-block";
 				img.style.transform = `scale(${scale})`;
@@ -260,7 +262,7 @@ function createFileReader() {
 				img.style.display = "none";
 				tileContainer.style.display = "none";
 				colorPalette.style.display = "none";
-				imgColors.innerHTML = ` ⚠ ${canvas.width * canvas.height - 16384} pixels overhead!`;
+				imgColors.innerHTML = ` ⚠ ${canvas.width * canvas.height - limit} pixels overhead!`;
 			}
 
 			let URL = url.origin + url.pathname;
@@ -415,7 +417,7 @@ function encrypt(_successful) {
 
 // Prepare tile frame
 function prepare(width, height) {
-	if (width * height > 4096) return;
+	if (width * height > limit) return;
 	let tileSize = width > 48 ? 8 : width > 32 ? 9 : 10;
 	tile.width = width * tileSize;
 	tile.height = height * tileSize;
